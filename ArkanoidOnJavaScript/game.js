@@ -1,6 +1,7 @@
 const KEYS = {
   LEFT: 'ArrowLeft',
   RIGHT: 'ArrowRight',
+  SPACE: 'Space',
 };
 
 let game = {
@@ -23,7 +24,9 @@ let game = {
   },
   setEvents() {
     window.addEventListener('keydown', (e) => {
-      if (e.key === KEYS.LEFT || e.key === KEYS.RIGHT) {
+      if (e.code === KEYS.SPACE) {
+        this.platform.fire();
+      } else if (e.code === KEYS.LEFT || e.code === KEYS.RIGHT) {
         this.platform.start(e.key);
       }
     });
@@ -66,7 +69,6 @@ let game = {
     );
 
     this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y);
-
     this.renderBlocks();
   },
   renderBlocks() {
@@ -86,6 +88,7 @@ let game = {
   },
   update() {
     this.platform.move();
+    this.ball.move();
   },
   run() {
     window.requestAnimationFrame(() => {
@@ -107,18 +110,32 @@ let game = {
 game.ball = {
   x: 320,
   y: 280,
+  velocity: 3,
+  dy: 0,
   width: 20,
   height: 20,
+  move() {
+    if (this.dy) {
+      this.y += this.dy;
+    }
+  },
+  start() {
+    this.dy = -this.velocity;
+  },
 };
 game.platform = {
-  velocity: 4,
+  velocity: 5,
   dx: 0,
   x: 280,
   y: 300,
+  ball: game.ball,
   move() {
     if (this.dx) {
       this.x += this.dx;
-      game.ball.x += this.dx;
+
+      if (this.ball) {
+        this.ball.x += this.dx;
+      }
     }
   },
   start(direction) {
@@ -126,6 +143,12 @@ game.platform = {
       this.dx = -this.velocity;
     } else if (direction == KEYS.RIGHT) {
       this.dx = this.velocity;
+    }
+  },
+  fire() {
+    if (this.ball) {
+      this.ball.start();
+      this.ball = null;
     }
   },
   stop() {
