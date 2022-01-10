@@ -176,7 +176,8 @@ game.ball = {
     block.active = false;
   },
   bumbPlatform(platform) {
-    this.dy *= -1;
+    if (this.dy < 0) return;
+    this.dy = -this.velocity;
     let touchX = this.x + this.width / 2;
     this.dx = this.velocity * platform.gettTouchOffset(touchX);
   },
