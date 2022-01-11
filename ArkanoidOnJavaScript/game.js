@@ -9,6 +9,7 @@ let game = {
   platform: null,
   ball: null,
   blocks: [],
+  running: true,
   rows: 4,
   cols: 8,
   width: 640,
@@ -100,10 +101,11 @@ let game = {
   },
 
   update() {
-    this.platform.move();
-    this.ball.move();
     this.collideBlocks();
     this.collidePlatform();
+    this.ball.collideWorldBounds();
+    this.platform.move();
+    this.ball.move();
   },
 
   collideBlocks() {
@@ -119,11 +121,13 @@ let game = {
     }
   },
   run() {
-    window.requestAnimationFrame(() => {
-      this.update();
-      this.render();
-      this.run();
-    });
+    if (this.running) {
+      window.requestAnimationFrame(() => {
+        this.update();
+        this.render();
+        this.run();
+      });
+    }
   },
   random(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -160,26 +164,68 @@ game.ball = {
   collide(elem) {
     let x = this.x + this.dx;
     let y = this.y + this.dy;
+
+    let ballTop = y;
+    let ballRight = x + this.width;
+    let ballBottom = y + this.height;
+    let ballLeft = x;
+
+    let elemTop = elem.y;
+    let elemRight = elem.x + elem.width;
+    let elemBottom = elem.y + elem.height;
+    let elemLeft = elem.x;
+
     if (
-      y < elem.y + elem.height &&
-      y + this.height > elem.y &&
-      x + this.width > elem.x &&
-      x < elem.x + elem.width
+      ballTop < elemBottom &&
+      ballRight > elemLeft &&
+      ballBottom > elemTop &&
+      ballLeft < elemRight
     ) {
       return true;
     } else {
       return false;
     }
   },
+  collideWorldBounds() {
+    let x = this.x + this.dx;
+    let y = this.y + this.dy;
+
+    let ballTop = y;
+    let ballRight = x + this.width;
+    let ballBottom = y + this.height;
+    let ballLeft = x;
+
+    let worldTop = 0;
+    let worldRight = game.width;
+    let worldBottom = game.height;
+    let worldLeft = 0;
+
+    if (ballRight > worldRight) {
+      this.x = game.width - this.width;
+      this.dx = -this.velocity;
+    } else if (ballLeft < worldLeft) {
+      this.x = 0;
+      this.dx = this.velocity;
+    } else if (ballTop < worldTop) {
+      this.y = 0;
+      this.dy = this.velocity;
+    } else if (ballBottom > worldBottom) {
+      game.running = false;
+      alert('Its a fiasco bro');
+      window.location.reload();
+    }
+  },
+
   bumbBlock(block) {
     this.dy *= -1;
     block.active = false;
   },
   bumbPlatform(platform) {
-    if (this.dy < 0) return;
-    this.dy = -this.velocity;
-    let touchX = this.x + this.width / 2;
-    this.dx = this.velocity * platform.gettTouchOffset(touchX);
+    if (this.dy > 0) {
+      this.dy = -this.velocity;
+      let touchX = this.x + this.width / 2;
+      this.dx = this.velocity * platform.gettTouchOffset(touchX);
+    }
   },
 };
 game.platform = {
