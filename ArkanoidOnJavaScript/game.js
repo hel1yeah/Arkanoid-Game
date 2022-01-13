@@ -15,6 +15,7 @@ let game = {
   cols: 8,
   width: 640,
   height: 360,
+  sounds: { bump: null },
   sprites: {
     background: null,
     ball: null,
@@ -43,23 +44,37 @@ let game = {
   preload(callback) {
     let loadet = 0;
     let required = Object.keys(this.sprites).length;
+    required += Object.keys(this.sounds).length;
 
-    let onLoad = () => {
+    let onResourseLoad = () => {
       ++loadet;
       if (loadet >= required) {
         callback();
       }
     };
 
+    this.preloadSprites(onResourseLoad);
+    this.preloadSounds(onResourseLoad);
+  },
+  preloadSprites(onResourseLoad) {
     for (const key in this.sprites) {
       if (Object.hasOwnProperty.call(this.sprites, key)) {
         this.sprites[key] = new Image();
         this.sprites[key].src = `./img/${key}.png`;
-        this.sprites[key].addEventListener('load', onLoad);
+        this.sprites[key].addEventListener('load', onResourseLoad);
       }
     }
   },
-
+  preloadSounds(onResourseLoad) {
+    for (const key in this.sounds) {
+      if (Object.hasOwnProperty.call(this.sounds, key)) {
+        this.sounds[key] = new Audio(`./sounds/${key}.mp3`);
+        this.sounds[key].addEventListener('canplaythrough', onResourseLoad, {
+          once: true,
+        });
+      }
+    }
+  },
   render() {
     this.ctx.clearRect(0, 0, this.width, this.height);
     this.ctx.drawImage(this.sprites.background, 0, 0);
@@ -114,6 +129,7 @@ let game = {
       if (block.active && this.ball.collide(block)) {
         this.ball.bumbBlock(block);
         this.addScore();
+        this.sounds.bump.play();
       }
     }
   },
@@ -126,6 +142,7 @@ let game = {
   collidePlatform() {
     if (this.ball.collide(this.platform)) {
       this.ball.bumbPlatform(this.platform);
+      this.sounds.bump.play();
     }
   },
   end(text) {
@@ -145,7 +162,7 @@ let game = {
   random(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
   },
-  start: function () {
+  start() {
     this.init();
     this.preload(() => {
       this.created();
@@ -216,12 +233,15 @@ game.ball = {
     if (ballRight > worldRight) {
       this.x = game.width - this.width;
       this.dx = -this.velocity;
+      game.sounds.bump.play();
     } else if (ballLeft < worldLeft) {
       this.x = 0;
       this.dx = this.velocity;
+      game.sounds.bump.play();
     } else if (ballTop < worldTop) {
       this.y = 0;
       this.dy = this.velocity;
+      game.sounds.bump.play();
     } else if (ballBottom > worldBottom) {
       game.end('Its a fiasco bro');
     }
