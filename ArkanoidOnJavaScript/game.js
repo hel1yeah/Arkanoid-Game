@@ -25,6 +25,8 @@ let game = {
 
   init() {
     this.ctx = document.getElementById('mycanvars').getContext('2d');
+    this.ctx.font = '20px Roboto';
+    this.ctx.fillStyle = '#fff';
     this.setEvents();
   },
 
@@ -80,7 +82,7 @@ let game = {
     this.ctx.drawImage(this.sprites.background, 0, 0);
     this.ctx.drawImage(
       this.sprites.ball,
-      0,
+      this.ball.frame * this.ball.width,
       0,
       this.ball.width,
       this.ball.height,
@@ -92,6 +94,7 @@ let game = {
 
     this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y);
     this.renderBlocks();
+    this.ctx.fillText(`Score: ${this.score}`, this.width - 100, 20);
   },
 
   renderBlocks() {
@@ -174,7 +177,8 @@ let game = {
 game.ball = {
   x: 320,
   y: 280,
-  velocity: 3,
+  frame: 0,
+  velocity: 2,
   dy: 0,
   dx: 0,
   width: 20,
@@ -190,6 +194,13 @@ game.ball = {
   start() {
     this.dy = -this.velocity;
     this.dx = game.random(-this.velocity, +this.velocity);
+
+    setInterval(() => {
+      ++this.frame;
+      if (this.frame > 3) {
+        this.frame = 0;
+      }
+    }, 200);
   },
   collide(elem) {
     let x = this.x + this.dx;
