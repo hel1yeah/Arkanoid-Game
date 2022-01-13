@@ -15,7 +15,7 @@ let game = {
   cols: 8,
   width: 640,
   height: 360,
-  sounds: { bump: null },
+  sounds: { bump: null, gameFone: null },
   sprites: {
     background: null,
     ball: null,
@@ -42,7 +42,12 @@ let game = {
       this.platform.stop();
     });
   },
-
+  autoPlay() {
+    this.sounds.gameFone.addEventListener('ended', function () {
+      game.sounds.gameFone.currentTime = 0;
+      game.sounds.gameFone.play();
+    });
+  },
   preload(callback) {
     let loadet = 0;
     let required = Object.keys(this.sprites).length;
@@ -194,7 +199,8 @@ game.ball = {
   start() {
     this.dy = -this.velocity;
     this.dx = game.random(-this.velocity, +this.velocity);
-
+    game.autoPlay();
+    game.sounds.gameFone.play();
     setInterval(() => {
       ++this.frame;
       if (this.frame > 3) {
