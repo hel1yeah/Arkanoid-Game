@@ -9,6 +9,7 @@ let game = {
   platform: null,
   ball: null,
   blocks: [],
+  score: 0,
   running: true,
   rows: 4,
   cols: 8,
@@ -112,13 +113,25 @@ let game = {
     for (const block of this.blocks) {
       if (block.active && this.ball.collide(block)) {
         this.ball.bumbBlock(block);
+        this.addScore();
       }
+    }
+  },
+  addScore() {
+    ++this.score;
+    if (this.score >= this.blocks.length) {
+      this.end('You Wins');
     }
   },
   collidePlatform() {
     if (this.ball.collide(this.platform)) {
       this.ball.bumbPlatform(this.platform);
     }
+  },
+  end(text) {
+    game.running = false;
+    alert(text);
+    window.location.reload();
   },
   run() {
     if (this.running) {
@@ -210,9 +223,7 @@ game.ball = {
       this.y = 0;
       this.dy = this.velocity;
     } else if (ballBottom > worldBottom) {
-      game.running = false;
-      alert('Its a fiasco bro');
-      window.location.reload();
+      game.end('Its a fiasco bro');
     }
   },
 
